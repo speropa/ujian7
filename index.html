@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ujian CBT Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+        }
+        .card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        .quiz-navigation {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 5px;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        .quiz-navigation button {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .quiz-navigation button.active {
+            background-color: #3498db;
+            color: #fff;
+            border-color: #3498db;
+        }
+        .quiz-navigation button.answered {
+            background-color: #2ecc71;
+            color: #fff;
+            border-color: #2ecc71;
+        }
+        .quiz-navigation button:hover:not(.active):not(.answered) {
+            background-color: #e0e0e0;
+        }
+        .quiz-question {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        .quiz-options label {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .quiz-options label:hover {
+            background-color: #f0f0f0;
+        }
+        .quiz-options input[type="radio"] {
+            margin-right: 10px;
+        }
+        .timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5em;
+        }
+        .overlay-content {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Ujian CBT Online</h1>
+    </div>
+
+    <div class="container">
+        <div class="overlay" id="loading-overlay">
+            <div class="overlay-content">Memuat...</div>
+        </div>
+
+        <div class="notification" id="notification"></div>
+
+        <div id="login-form" class="card">
+            <h2>Login Peserta Ujian</h2>
+            <div class="form-group">
+                <label for="student-nis">Nomor Induk Siswa (NIS):</label>
+                <input type="text" id="student-nis" placeholder="Masukkan NIS Anda" required>
+            </div>
+            <div class="form-group">
+                <label for="student-password">Password:</label>
+                <input type="password" id="student-password" placeholder="Masukkan Password Anda" required>
+            </div>
+            <button id="login-button" class="btn btn-primary">Login</button>
+            <p id="login-error" style="color: red; margin-top: 10px;"></p>
+        </div>
+
+        <div id="exam-access-info" class="card" style="display: none;">
+            <h2>Informasi Ujian</h2>
+            <p><strong>Nama Siswa:</strong> <span id="info-student-name"></span></p>
+            <p><strong>Kelas:</strong> <span id="info-student-class"></span></p>
+            <p><strong>Token Ujian:</strong> <span id="info-exam-token"></span></p>
+            <p><strong>Status Akses:</strong> <span id="info-access-status"></span></p>
+            <p id="exam-info-message"></p>
+            <button id="start-exam-button" class="btn btn-primary" style="display: none;">Mulai Ujian</button>
+            <button id="continue-exam-button" class="btn btn-primary" style="display: none;">Lanjutkan Ujian</button>
+        </div>
+
+        <div id="quiz-section" style="display: none;">
+            <div class="card">
+                <p class="timer">Sisa Waktu: <span id="timer-display"></span></p>
+                <div class="quiz-question">
+                    <p><strong>Soal <span id="current-question-number"></span>:</strong></p>
+                    <div id="question-content"></div>
+                </div>
+                <div class="quiz-options" id="options-container">
+                    </div>
+                <div class="button-group">
+                    <button id="prev-question-button" class="btn btn-secondary" style="display: none;">Sebelumnya</button>
+                    <button id="next-question-button" class="btn btn-primary">Selanjutnya</button>
+                </div>
+            </div>
+            <div class="quiz-navigation" id="question-navigation">
+                </div>
+            <div class="button-group">
+                <button id="finish-exam-button" class="btn btn-danger">Selesai Ujian</button>
+            </div>
+        </div>
+
+        <div id="finish-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Selesai Ujian?</h2>
+                <p>Apakah Anda yakin ingin menyelesaikan ujian? Anda tidak dapat mengubah jawaban setelah ini.</p>
+                <button id="confirm-finish-button" class="btn btn-danger">Ya, Selesai</button>
+                <button id="cancel-finish-button" class="btn btn-secondary">Tidak, Kembali</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getDatabase, ref, get, set, remove, onValue, off } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+        // TAMBAHKAN INI UNTUK AUTENTIKASI
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+
+        // Firebase Configuration (GANTI DENGAN KONFIGURASI PROYEK FIREBASE ANDA)
+        // Pastikan konfigurasi ini sama dengan yang Anda gunakan di Firebase Console
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY", // GANTI DENGAN API KEY ANDA
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app", // Sesuaikan dengan lokasi DB Anda
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app); // INISIALISASI FIREBASE AUTH
+
+        // --- Variabel Global ---
+        let currentTokenKey = null;
+        let currentStudentId = null; // ID siswa dari NIS
+        let firebaseUserUid = null; // UID Firebase dari login anonim
+        let currentQuestionIndex = 0;
+        let examQuestions = [];
+        let currentStudentAnswers = {};
+        let examTimer = null;
+        let timeRemaining = 0;
+        let isExamActive = false;
+        let examDuration = 0; // Durasi ujian dalam menit
+
+        // --- Referensi Database ---
+        const tokensRef = ref(database, 'tokens');
+        const studentsRef = ref(database, 'students');
+        const examAccessStatusRef = ref(database, 'exam_access_status');
+        const submittedExamsRef = ref(database, 'submitted_exams');
+        const studentAnswersRootRef = ref(database, 'student_answers'); // Referensi root untuk jawaban siswa
+
+        // --- Elemen DOM ---
+        const loginForm = document.getElementById('login-form');
+        const studentNisInput = document.getElementById('student-nis');
+        const studentPasswordInput = document.getElementById('student-password');
+        const loginButton = document.getElementById('login-button');
+        const loginError = document.getElementById('login-error');
+
+        const examAccessInfo = document.getElementById('exam-access-info');
+        const infoStudentName = document.getElementById('info-student-name');
+        const infoStudentClass = document.getElementById('info-student-class');
+        const infoExamToken = document.getElementById('info-exam-token');
+        const infoAccessStatus = document.getElementById('info-access-status');
+        const examInfoMessage = document.getElementById('exam-info-message');
+        const startExamButton = document.getElementById('start-exam-button');
+        const continueExamButton = document.getElementById('continue-exam-button');
+
+        const quizSection = document.getElementById('quiz-section');
+        const timerDisplay = document.getElementById('timer-display');
+        const currentQuestionNumber = document.getElementById('current-question-number');
+        const questionContent = document.getElementById('question-content');
+        const optionsContainer = document.getElementById('options-container');
+        const prevQuestionButton = document.getElementById('prev-question-button');
+        const nextQuestionButton = document.getElementById('next-question-button');
+        const questionNavigation = document.getElementById('question-navigation');
+        const finishExamButton = document.getElementById('finish-exam-button');
+
+        const finishModal = document.getElementById('finish-modal');
+        const closeModalButton = finishModal.querySelector('.close-button');
+        const confirmFinishButton = document.getElementById('confirm-finish-button');
+        const cancelFinishButton = document.getElementById('cancel-finish-button');
+
+        const notification = document.getElementById('notification');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        // --- Fungsi Helper ---
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function showLoadingOverlay(message = 'Memuat...') {
+            loadingOverlay.querySelector('.overlay-content').textContent = message;
+            loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoadingOverlay() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        function formatTime(seconds) {
+            const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+            const s = String(seconds % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        // --- Fungsi Utama ---
+
+        // FUNGSI BARU: Melakukan login anonim Firebase
+        async function performAnonymousSignIn() {
+            try {
+                showLoadingOverlay('Menghubungkan ke server...');
+                const userCredential = await signInAnonymously(auth);
+                const user = userCredential.user;
+                firebaseUserUid = user.uid; // Simpan UID Firebase yang unik
+                console.log("Siswa berhasil login anonim dengan UID:", firebaseUserUid);
+                hideLoadingOverlay();
+            } catch (error) {
+                console.error("Gagal login anonim:", error);
+                showNotification("Gagal terhubung ke server. Mohon refresh halaman.");
+                hideLoadingOverlay();
+                // Opsional: nonaktifkan form login jika gagal terhubung
+                loginButton.disabled = true;
+            }
+        }
+
+        // Event listener untuk perubahan status autentikasi (untuk menjaga sesi)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                firebaseUserUid = user.uid;
+                console.log("Sesi autentikasi aktif:", firebaseUserUid);
+                // Jika sudah ada token dan studentId di localStorage, coba lanjutkan
+                if (localStorage.getItem('currentTokenKey') && localStorage.getItem('currentStudentId')) {
+                    currentTokenKey = localStorage.getItem('currentTokenKey');
+                    currentStudentId = localStorage.getItem('currentStudentId');
+                    checkExamAccess(currentTokenKey, currentStudentId);
+                }
+            } else {
+                firebaseUserUid = null;
+                console.log("Tidak ada sesi autentikasi aktif. Memulai anonim...");
+                // Jika tidak ada sesi, coba login anonim
+                performAnonymousSignIn();
+            }
+        });
+
+
+        // Fungsi login siswa
+        loginButton.addEventListener('click', async () => {
+            const nis = studentNisInput.value.trim();
+            const password = studentPasswordInput.value.trim();
+            loginError.textContent = ''; // Clear previous error
+
+            if (!nis || !password) {
+                loginError.textContent = 'NIS dan Password harus diisi.';
+                return;
+            }
+
+            if (!firebaseUserUid) { // Pastikan Firebase UID sudah didapatkan
+                loginError.textContent = 'Menghubungkan ke server, mohon tunggu sebentar.';
+                await performAnonymousSignIn(); // Coba lagi jika belum ada
+                if (!firebaseUserUid) return; // Keluar jika masih gagal
+            }
+
+            showLoadingOverlay('Memverifikasi login...');
+            try {
+                // 1. Verifikasi NIS dan Password dari students node
+                const studentsSnapshot = await get(studentsRef);
+                const studentsData = studentsSnapshot.val();
+                let studentFound = false;
+
+                if (studentsData) {
+                    for (const id in studentsData) {
+                        const student = studentsData[id];
+                        if (student.nis === nis && student.password === password) {
+                            currentStudentId = id; // Simpan ID siswa dari Firebase
+                            studentFound = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!studentFound) {
+                    loginError.textContent = 'NIS atau Password salah.';
+                    showNotification('NIS atau Password salah.');
+                    return;
+                }
+
+                // 2. Dapatkan token yang aktif dari tokens node
+                const tokensSnapshot = await get(tokensRef);
+                const tokensData = tokensSnapshot.val();
+                let activeToken = null;
+
+                if (tokensData) {
+                    for (const key in tokensData) {
+                        const token = tokensData[key];
+                        if (token.status === 'aktif') {
+                            activeToken = { key: key, ...token };
+                            break;
+                        }
+                    }
+                }
+
+                if (!activeToken) {
+                    loginError.textContent = 'Belum ada ujian yang aktif saat ini.';
+                    showNotification('Belum ada ujian yang aktif.');
+                    return;
+                }
+
+                currentTokenKey = activeToken.key; // Simpan token key yang aktif
+                examDuration = activeToken.duration * 60; // Durasi ujian dalam detik
+
+                // 3. Cek status akses ujian siswa
+                await checkExamAccess(currentTokenKey, currentStudentId);
+
+                // Simpan di localStorage untuk persistensi sesi
+                localStorage.setItem('currentTokenKey', currentTokenKey);
+                localStorage.setItem('currentStudentId', currentStudentId);
+
+            } catch (error) {
+                console.error("Kesalahan saat login:", error);
+                loginError.textContent = 'Terjadi kesalahan. Mohon coba lagi.';
+                showNotification('Terjadi kesalahan saat login.');
+            } finally {
+                hideLoadingOverlay();
+            }
+        });
+
+        async function checkExamAccess(tokenKey, studentId) {
+            showLoadingOverlay('Mengecek akses ujian...');
+            const studentExamAccessRef = ref(database, `exam_access_status/${tokenKey}/${studentId}`);
+            try {
+                const accessSnapshot = await get(studentExamAccessRef);
+                let accessData = accessSnapshot.val();
+
+                if (!accessData) {
+                    // Jika belum ada data akses, buat entri baru
+                    accessData = {
+                        nis: studentNisInput.value.trim(),
+                        nama: (await get(ref(database, `students/${studentId}/nama`))).val(), // Ambil nama siswa
+                        kelas: (await get(ref(database, `students/${studentId}/kelas`))).val(), // Ambil kelas siswa
+                        exam_access_status: 'menunggu', // Status awal
+                        start_time: null,
+                        end_time: null,
+                        time_remaining: examDuration, // Waktu sisa awal
+                        firebaseUid: firebaseUserUid, // PENTING: Simpan UID Firebase
+                        studentId: studentId // PENTING: Simpan ID siswa
+                    };
+                    await set(studentExamAccessRef, accessData);
+                } else if (accessData.nis !== studentNisInput.value.trim() || accessData.firebaseUid !== firebaseUserUid) {
+                    // Validasi tambahan: jika NIS atau Firebase UID di DB tidak cocok
+                    // Ini bisa terjadi jika ada upaya login dari perangkat/sesi lain
+                    loginError.textContent = 'Akses ujian tidak valid untuk NIS ini atau sudah login di perangkat lain.';
+                    showNotification('Akses tidak valid.');
+                    hideLoadingOverlay();
+                    return;
+                }
+
+                updateExamAccessUI(accessData);
+
+            } catch (error) {
+                console.error("Kesalahan saat mengecek akses ujian:", error);
+                loginError.textContent = 'Gagal mengecek akses ujian. Mohon coba lagi.';
+                showNotification('Gagal mengecek akses.');
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        async function updateExamAccessUI(accessData) {
+            loginForm.style.display = 'none';
+            examAccessInfo.style.display = 'block';
+
+            const studentInfo = await get(ref(database, `students/${currentStudentId}`));
+            const student = studentInfo.val();
+
+            infoStudentName.textContent = student.nama;
+            infoStudentClass.textContent = student.kelas;
+            infoExamToken.textContent = currentTokenKey;
+            infoAccessStatus.textContent = accessData.exam_access_status;
+            examInfoMessage.textContent = ''; // Clear previous messages
+
+            startExamButton.style.display = 'none';
+            continueExamButton.style.display = 'none';
+
+            if (accessData.exam_access_status === 'menunggu') {
+                examInfoMessage.textContent = 'Pengawas belum memberikan akses ujian.';
+            } else if (accessData.exam_access_status === 'diizinkan') {
+                startExamButton.style.display = 'block';
+                examInfoMessage.textContent = 'Klik "Mulai Ujian" untuk memulai.';
+            } else if (accessData.exam_access_status === 'sedang_berlangsung') {
+                continueExamButton.style.display = 'block';
+                examInfoMessage.textContent = 'Anda memiliki ujian yang sedang berlangsung. Klik "Lanjutkan Ujian".';
+                timeRemaining = accessData.time_remaining || examDuration;
+            } else if (accessData.exam_access_status === 'selesai' || accessData.exam_access_status === 'kadaluarsa') {
+                examInfoMessage.textContent = 'Ujian Anda telah selesai atau kadaluarsa. Anda tidak dapat mengaksesnya lagi.';
+            }
+        }
+
+        startExamButton.addEventListener('click', async () => {
+            showLoadingOverlay('Memulai ujian...');
+            const studentExamAccessRef = ref(database, `exam_access_status/${currentTokenKey}/${currentStudentId}`);
+            try {
+                const now = Date.now();
+                const updates = {
+                    exam_access_status: 'sedang_berlangsung',
+                    start_time: now,
+                    // time_remaining akan di-set saat ujian dimulai
+                    firebaseUid: firebaseUserUid, // PENTING: Sertakan UID Firebase
+                    studentId: currentStudentId // PENTING: Sertakan ID siswa
+                };
+                await update(studentExamAccessRef, updates); // Gunakan update untuk hanya mengubah yang perlu
+                showQuizSection(currentTokenKey);
+                isExamActive = true;
+                startTimer(examDuration); // Mulai timer dari durasi penuh
+                showNotification('Ujian dimulai!');
+            } catch (error) {
+                console.error("Gagal memulai ujian:", error);
+                showNotification('Gagal memulai ujian. Coba lagi.');
+            } finally {
+                hideLoadingOverlay();
+            }
+        });
+
+        continueExamButton.addEventListener('click', async () => {
+            showLoadingOverlay('Melanjutkan ujian...');
+            const studentExamAccessRef = ref(database, `exam_access_status/${currentTokenKey}/${currentStudentId}`);
+            try {
+                const accessSnapshot = await get(studentExamAccessRef);
+                const accessData = accessSnapshot.val();
+
+                if (accessData.exam_access_status === 'sedang_berlangsung') {
+                    timeRemaining = accessData.time_remaining; // Lanjutkan dari waktu yang tersisa
+                    showQuizSection(currentTokenKey);
+                    isExamActive = true;
+                    startTimer(timeRemaining);
+                    showNotification('Ujian dilanjutkan!');
+                } else {
+                    showNotification('Tidak dapat melanjutkan ujian. Status tidak valid.');
+                }
+            } catch (error) {
+                console.error("Gagal melanjutkan ujian:", error);
+                showNotification('Gagal melanjutkan ujian. Coba lagi.');
+            } finally {
+                hideLoadingOverlay();
+            }
+        });
+
+        async function showQuizSection(tokenKey) {
+            examAccessInfo.style.display = 'none';
+            quizSection.style.display = 'block';
+
+            // Dapatkan soal dari token
+            const tokenSnapshot = await get(ref(database, `tokens/${tokenKey}`));
+            const tokenData = tokenSnapshot.val();
+            if (tokenData && tokenData.questions) {
+                examQuestions = tokenData.questions;
+            } else {
+                showNotification('Soal ujian tidak ditemukan.');
+                return;
+            }
+
+            // Muat jawaban siswa yang sudah ada
+            const studentAnswersRef = ref(database, `student_answers/${tokenKey}/${currentStudentId}`);
+            const answersSnapshot = await get(studentAnswersRef);
+            currentStudentAnswers = answersSnapshot.val() || {};
+
+            // Inisialisasi navigasi dan soal pertama
+            renderQuestionNavigation();
+            loadQuestion(currentQuestionIndex);
+        }
+
+        function startTimer(durationInSeconds) {
+            timeRemaining = durationInSeconds;
+            timerDisplay.textContent = formatTime(timeRemaining);
+
+            examTimer = setInterval(async () => {
+                timeRemaining--;
+                timerDisplay.textContent = formatTime(timeRemaining);
+
+                // Perbarui waktu sisa di Firebase setiap 10 detik
+                if (timeRemaining % 10 === 0 && timeRemaining > 0) {
+                    const studentExamAccessRef = ref(database, `exam_access_status/${currentTokenKey}/${currentStudentId}`);
+                    // PENTING: pastikan firebaseUid dan studentId juga dikirim saat update
+                    await update(studentExamAccessRef, {
+                        time_remaining: timeRemaining,
+                        firebaseUid: firebaseUserUid, // Pastikan ada
+                        studentId: currentStudentId // Pastikan ada
+                    });
+                }
+
+                if (timeRemaining <= 0) {
+                    clearInterval(examTimer);
+                    timeRemaining = 0;
+                    timerDisplay.textContent = "00:00:00";
+                    showNotification("Waktu ujian habis!");
+                    finishExam(true); // Otomatis selesaikan ujian
+                }
+            }, 1000);
+        }
+
+        function loadQuestion(index) {
+            currentQuestionIndex = index;
+            if (examQuestions.length === 0) {
+                questionContent.innerHTML = '<p>Tidak ada soal.</p>';
+                optionsContainer.innerHTML = '';
+                return;
+            }
+
+            const question = examQuestions[index];
+            currentQuestionNumber.textContent = index + 1;
+            questionContent.innerHTML = question.question;
+
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, optionIndex) => {
+                const optionId = `q${index}-o${optionIndex}`;
+                const isChecked = currentStudentAnswers[question.id] === option.value;
+                optionsContainer.innerHTML += `
+                    <label>
+                        <input type="radio" name="question-${question.id}" value="${option.value}" id="${optionId}" ${isChecked ? 'checked' : ''}>
+                        ${option.text}
+                    </label>
+                `;
+            });
+
+            // Add event listeners for radio buttons
+            optionsContainer.querySelectorAll(`input[name="question-${question.id}"]`).forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (isExamActive) { // Hanya simpan jawaban jika ujian aktif
+                        saveAnswer(question.id, e.target.value);
+                    }
+                });
+            });
+
+            // Update navigation buttons visibility
+            prevQuestionButton.style.display = index > 0 ? 'block' : 'none';
+            nextQuestionButton.style.display = index < examQuestions.length - 1 ? 'block' : 'none';
+
+            // Update navigation buttons status
+            renderQuestionNavigation();
+        }
+
+        async function saveAnswer(questionId, answer) {
+            currentStudentAnswers[questionId] = answer;
+            const studentAnswersRef = ref(database, `student_answers/${currentTokenKey}/${currentStudentId}`);
+            try {
+                // Saat menyimpan jawaban, pastikan menyertakan firebaseUid dan studentId
+                await set(studentAnswersRef, {
+                    ...currentStudentAnswers, // Simpan semua jawaban yang sudah ada
+                    firebaseUid: firebaseUserUid, // PENTING: Sertakan UID Firebase
+                    studentId: currentStudentId // PENTING: Sertakan ID Siswa
+                });
+                showNotification('Jawaban disimpan.');
+                renderQuestionNavigation(); // Update tampilan nomor soal
+            } catch (error) {
+                console.error("Gagal menyimpan jawaban:", error);
+                showNotification('Gagal menyimpan jawaban. Coba lagi.');
+            }
+        }
+
+        prevQuestionButton.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                loadQuestion(currentQuestionIndex - 1);
+            }
+        });
+
+        nextQuestionButton.addEventListener('click', () => {
+            if (currentQuestionIndex < examQuestions.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            }
+        });
+
+        function renderQuestionNavigation() {
+            questionNavigation.innerHTML = '';
+            examQuestions.forEach((question, index) => {
+                const button = document.createElement('button');
+                button.textContent = index + 1;
+                button.classList.add('nav-button');
+                if (index === currentQuestionIndex) {
+                    button.classList.add('active');
+                }
+                if (currentStudentAnswers[question.id]) {
+                    button.classList.add('answered');
+                }
+                button.addEventListener('click', () => loadQuestion(index));
+                questionNavigation.appendChild(button);
+            });
+        }
+
+        finishExamButton.addEventListener('click', () => {
+            finishModal.style.display = 'flex';
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            finishModal.style.display = 'none';
+        });
+
+        cancelFinishButton.addEventListener('click', () => {
+            finishModal.style.display = 'none';
+        });
+
+        confirmFinishButton.addEventListener('click', () => {
+            finishModal.style.display = 'none';
+            finishExam(false); // Selesaikan ujian secara manual
+        });
+
+        async function finishExam(isAutoSubmit) {
+            if (!isExamActive) return; // Jangan selesaikan jika ujian tidak aktif
+
+            isExamActive = false;
+            clearInterval(examTimer);
+            showLoadingOverlay('Menyelesaikan ujian...');
+
+            try {
+                const studentExamAccessRef = ref(database, `exam_access_status/${currentTokenKey}/${currentStudentId}`);
+                const submittedExamsRef = ref(database, `submitted_exams/${currentTokenKey}/${currentStudentId}`);
+
+                // 1. Perbarui status akses ujian
+                const now = Date.now();
+                await update(studentExamAccessRef, {
+                    exam_access_status: 'selesai',
+                    end_time: now,
+                    time_remaining: timeRemaining, // Waktu sisa terakhir
+                    firebaseUid: firebaseUserUid, // PENTING: Sertakan UID Firebase
+                    studentId: currentStudentId // PENTING: Sertakan ID Siswa
+                });
+
+                // 2. Simpan atau perbarui entri ujian yang disubmit
+                const submittedData = {
+                    nis: studentNisInput.value.trim(),
+                    studentId: currentStudentId,
+                    tokenKey: currentTokenKey,
+                    submit_time: now,
+                    // waktu_selesai_sebenarnya: formatTime(examDuration - timeRemaining), // Waktu yang dihabiskan
+                    time_taken: examDuration - timeRemaining, // Waktu yang dihabiskan (dalam detik)
+                    total_questions: examQuestions.length,
+                    answered_questions: Object.keys(currentStudentAnswers).length,
+                    answers: currentStudentAnswers, // Simpan semua jawaban
+                    is_auto_submitted: isAutoSubmit,
+                    firebaseUid: firebaseUserUid // PENTING: Sertakan UID Firebase
+                };
+                await set(submittedExamsRef, submittedData);
+
+                showNotification('Ujian Anda telah selesai. Terima kasih.');
+                alert('Ujian Anda telah selesai. Terima kasih.');
+
+                // Bersihkan state lokal dan redirect atau tampilkan halaman selesai
+                localStorage.removeItem('currentTokenKey');
+                localStorage.removeItem('currentStudentId');
+                window.location.reload(); // Reload halaman untuk kembali ke login
+
+            } catch (error) {
+                console.error("Gagal menyelesaikan ujian:", error);
+                showNotification('Gagal menyelesaikan ujian. Coba lagi.');
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        // --- Inisialisasi Aplikasi ---
+        window.onload = async () => {
+            // Initial call to onAuthStateChanged will handle performAnonymousSignIn
+            // and then potentially restore exam state if session exists in localStorage.
+            // No direct call to performAnonymousSignIn() or restoreExamState() here.
+            // onAuthStateChanged takes care of it.
+        };
+
+        // Memastikan UID Firebase digunakan dalam data yang dikirim ke database
+        // Fungsi ini sudah dimodifikasi di dalam `saveAnswer`, `startExamButton.addEventListener`,
+        // `continueExamButton.addEventListener`, dan `finishExam` di atas.
+        // Tidak perlu fungsi terpisah lagi.
+
+    </script>
+</body>
+</html>```
+
