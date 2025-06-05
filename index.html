@@ -2930,7 +2930,7 @@
                             // BARU: Jika isLoggedIn true, blokir pemulihan dan instruksikan admin reset
                             if (accessData.isLoggedIn === true) {
                                 message.style.color = "red";
-                                message.textContent = "Sesi Anda sudah aktif di perangkat lain atau belum direset. Mohon hubungi admin untuk mereset sesi Anda.";
+                                message.textContent = "Anda sudah Login di perangkat lain. Mohon hubungi admin untuk mereset akun Anda.";
                                 loginContainer.style.display = 'flex';
                                 examContainer.style.display = 'none';
                                 sessionStorage.clear(); // Bersihkan penyimpanan sesi karena tidak dapat melanjutkan
@@ -3691,7 +3691,7 @@
                     // BARU: Logika utama untuk memblokir login jika isLoggedIn adalah true
                     if (examAccessData && examAccessData.isLoggedIn === true) {
                         message.style.color = "red";
-                        message.textContent = "Sesi Anda sudah aktif. Mohon hubungi admin untuk mereset sesi Anda.";
+                        message.textContent = "Anda sudah Login di perangkat lain. Mohon hubungi admin untuk mereset akun Anda.";
                         updateLoginButtonStatus();
                         return; // HENTIKAN login jika isLoggedIn true
                     }
