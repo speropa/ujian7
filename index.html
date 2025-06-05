@@ -547,10 +547,10 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 50px; /* Adjust this height based on where the "Open in new window" button is */
+            height: 60px; /* Adjust this height based on where the "Open in new window" button is */
             background: transparent; /* Fully transparent */
             z-index: 550; /* Higher than iframe (500), lower than sidebar/controls (600+) */
-            pointer-events: auto; /* IMPORTANT: This makes the overlay capture clicks, preventing them from reaching the iframe below */
+            pointer-events: auto; /* IMPORTANT: This makes the overlay capture clicks */
         }
 
         /* --- Sidebar Jawaban --- */
@@ -4167,6 +4167,27 @@
             loadSettingsAndStudents();
             loginContainer.style.opacity = 1;
             updateLoginButtonStatus();
+
+            // Add event listener to topIframeBlocker
+            const topIframeBlocker = document.getElementById('topIframeBlocker');
+            if (topIframeBlocker) {
+                topIframeBlocker.addEventListener('click', (e) => {
+                    console.log('Click captured by topIframeBlocker!');
+                    e.preventDefault(); // Prevent any default action
+                    e.stopPropagation(); // Stop the event from bubbling up or down
+                });
+                // Add touch events too for mobile
+                topIframeBlocker.addEventListener('touchstart', (e) => {
+                    console.log('Touchstart captured by topIframeBlocker!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+                topIframeBlocker.addEventListener('touchend', (e) => {
+                    console.log('Touchend captured by topIframeBlocker!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            }
         });
 
         /**
