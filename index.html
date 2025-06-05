@@ -337,6 +337,14 @@
             transition: background-color 0.2s ease;
         }
 
+        /* BARU: Gaya bergantian untuk daftar kelas/siswa */
+        .custom-modal-list li:nth-child(odd) {
+            background-color: white;
+        }
+        .custom-modal-list li:nth-child(even) {
+            background-color: #f9f9f9; /* Abu-abu sangat muda */
+        }
+
         /* Hapus border bawah untuk item terakhir */
         .custom-modal-list li:last-child {
             border-bottom: none;
@@ -344,7 +352,7 @@
 
         /* Efek hover untuk item daftar modal */
         .custom-modal-list li:hover {
-            background-color: #f0f0f0;
+            background-color: #e0e0e0;
         }
 
         /* Gaya untuk modal konfirmasi yang sudah ada */
@@ -2147,7 +2155,7 @@
          * @returns {void}
          */
         function handleLocation(position) {
-            checkLocation(position.coords.latitude, position.coords.longitude);
+            checkLocation(position.coords.latitude, position.coords.coords.longitude);
         }
 
         /**
