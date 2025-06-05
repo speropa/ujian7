@@ -585,12 +585,12 @@
             position: absolute; /* Posisi relatif terhadap examContentWrapper */
             right: 0; /* Posisi di sisi kanan examContentWrapper */
             top: 0; /* Posisi di atas */
-            height: 16%; /* Tinggi 20% dari 100% menjadi 16% (20% * 0.8) */
-            width: 56px; /* Lebar baru 56px */
+            height: 56px; /* BARU: Tinggi tetap agar jadi kotak */
+            width: 56px; /* Lebar tetap agar jadi kotak */
             display: flex; /* Default: terlihat */
             align-items: center;
             justify-content: center;
-            border-radius: 8px 0 0 8px; /* Pembulatan konsisten */
+            border-radius: 8px; /* BARU: Sudut membulat seragam */
             box-shadow: none; /* Hapus bayangan */
             transition: background-color 0.2s ease, transform 0.3s ease-in-out, opacity 0.2s ease; /* Tambahkan transisi opasitas */
             padding: 0;
@@ -608,11 +608,12 @@
 
         /* Teks di dalam tombol toggle sidebar */
         #sidebarToggle #sidebarText {
-            writing-mode: vertical-lr; /* Teks vertikal */
-            text-orientation: mixed;
-            transform: rotate(180deg); /* Putar untuk keterbacaan */
+            writing-mode: horizontal-tb; /* BARU: Teks horizontal */
+            text-orientation: unset; /* BARU: Atur ulang orientasi teks */
+            transform: none; /* BARU: Hapus rotasi */
             white-space: nowrap;
             padding: 10px 5px; /* Padding untuk teks */
+            font-size: 0.8em; /* BARU: Ukuran font lebih kecil */
         }
 
         /* Gaya baru untuk tombol Tutup Sidebar */
@@ -623,15 +624,15 @@
             font-weight: bold;
             cursor: pointer;
             border: none;
-            border-radius: 0 8px 8px 0; /* Pembulatan konsisten */
+            border-radius: 8px; /* BARU: Sudut membulat seragam */
             box-shadow: none; /* Hapus bayangan */
             display: none; /* Tersembunyi secara default */
             position: absolute;
             left: 0; /* Posisi di tepi kiri sidebar */
             top: 0; /* Posisi di atas */
-            height: 16%; /* Tinggi 20% dari 100% menjadi 16% (20% * 0.8) */
-            width: 56px; /* Lebar baru 56px */
-            flex-direction: column; /* Tata letak vertikal untuk ikon dan teks */
+            height: 56px; /* BARU: Tinggi tetap agar jadi kotak */
+            width: 56px; /* Lebar tetap agar jadi kotak */
+            flex-direction: row; /* BARU: Tata letak horizontal untuk ikon dan teks */
             align-items: center;
             justify-content: center;
             transition: background-color 0.2s ease, opacity 0.2s ease; /* Tambahkan transisi opasitas */
@@ -649,11 +650,12 @@
 
         /* Gaya untuk teks di dalam tombol Tutup Sidebar */
         #closeSidebarButton #closeSidebarText {
-            writing-mode: vertical-lr; /* Vertikal */
-            text-orientation: mixed;
-            transform: rotate(180deg); /* Putar untuk keterbacaan */
+            writing-mode: horizontal-tb; /* BARU: Horizontal */
+            text-orientation: unset; /* BARU: Atur ulang orientasi teks */
+            transform: none; /* BARU: Hapus rotasi */
             white-space: nowrap;
             padding: 10px 5px; /* Padding untuk teks */
+            font-size: 0.8em; /* BARU: Ukuran font lebih kecil */
         }
 
         /* Saat sidebar terbuka, sesuaikan lebar iframe dan tampilkan/sembunyikan tombol */
@@ -1411,18 +1413,18 @@
                 transform: translateX(0);
             }
             #sidebarToggle {
-                width: 56px; /* Lebar tombol toggle lebih kecil */
-                height: 16%; /* Tinggi 20% dari 100% menjadi 16% */
+                width: 56px; /* BARU: Lebar tetap agar jadi kotak */
+                height: 56px; /* BARU: Tinggi tetap agar jadi kotak */
             }
             #sidebarToggle #sidebarText {
-                padding: 8px 3px; /* Sesuaikan padding untuk seluler */
+                font-size: 0.7em; /* BARU: Ukuran font lebih kecil untuk seluler */
             }
             #closeSidebarButton {
-                width: 56px; /* Lebar tombol tutup lebih kecil */
-                height: 16%; /* Tinggi 20% dari 100% menjadi 16% */
+                width: 56px; /* BARU: Lebar tetap agar jadi kotak */
+                height: 56px; /* BARU: Tinggi tetap agar jadi kotak */
             }
             #closeSidebarButton #closeSidebarText {
-                padding: 8px 3px; /* Sesuaikan padding untuk seluler */
+                font-size: 0.7em; /* BARU: Ukuran font lebih kecil untuk seluler */
             }
             #answerListContainer {
                 grid-template-columns: repeat(auto-fill, minmax(25px, 1fr)); /* Kolom lebih kecil */
@@ -1949,7 +1951,8 @@
         const MIN_ZOOM = 1.0;
         const MAX_ZOOM = 2.0;
         const ZOOM_STEP = 0.1;
-        const PAN_STEP = 20; // Piksel untuk pan per klik
+        // PERUBAHAN: Mengurangi PAN_STEP untuk pergerakan yang lebih lambat dan halus
+        const PAN_STEP = 10; // Piksel untuk pan per klik (sebelumnya 20)
 
         // Variabel global untuk panning
         let isDragging = false;
@@ -1957,6 +1960,14 @@
         let currentTranslateX = 0;
         let currentTranslateY = 0;
         let autoHideTimer;
+
+        // Variabel untuk fitur tekan-tahan pan
+        let panIntervalId = null;
+        let panDirection = 0; // -1 untuk kiri, 1 untuk kanan
+        // PERUBAHAN: Menambahkan konstanta untuk penundaan awal dan interval pan
+        const PAN_START_DELAY = 1500; // 1.5 detik
+        const PAN_INTERVAL = 150; // Interval pergerakan (ms), sebelumnya 100
+        let panPressTimer = null; // BARU: Variabel untuk melacak timer penekanan tombol pan
 
 
         // --- Fungsi Utilitas ---
@@ -2576,7 +2587,6 @@
 
         /**
          * Mengaktifkan/menonaktifkan fitur keamanan ujian (mencegah salin/tempel/potong, pemilihan teks).
-         * @param {boolean} enable - True untuk mengaktifkan, false untuk menonaktifkan.
          * @returns {void}
          */
         function toggleExamSecurityFeatures(enable) {
@@ -2813,7 +2823,7 @@
                     isInExamMode = true;
                     toggleExamSecurityFeatures(true);
                     renderAnswerBoxes(); // Render kotak jawaban saat ujian dimulai
-                }, 10); // Penundaan kecil untuk efek fade-in
+                }, 10); // Penunduan kecil untuk efek fade-in
             }, 500); // Sesuaikan durasi fade-out loginContainer
 
 
@@ -3033,7 +3043,7 @@
                             firstLoginTimestamp: currentAccess ? currentAccess.firstLoginTimestamp : nowAccess,
                             lastAccessTimestamp: nowAccess,
                             isLoggedIn: true,
-                            examStartTime: currentAccess ? currentAccess.examStartTime || nowAccess : nowAccess, // Pertahankan jika ada, jika tidak, yang baru
+                            examStartTime: currentAccess ? currentAccess.examStartTime : nowAccess, // Pertahankan jika ada, jika tidak, yang baru
                             studentId: studentId,
                             attemptsLeft: toleranceLimitGlobal // Reset percobaan saat login berhasil
                         };
@@ -3543,6 +3553,45 @@
                 clearTimeout(autoHideTimer); // Hapus timer saat disembunyikan secara manual
             }
         }
+        
+        // Fungsi untuk memulai panning otomatis
+        function startAutoPan() {
+            if (panIntervalId) clearInterval(panIntervalId); // Hentikan interval yang ada
+            // PERUBAHAN: Menggunakan PAN_INTERVAL yang baru
+            panIntervalId = setInterval(() => {
+                if (currentZoom > MIN_ZOOM) {
+                    let newTranslateX = currentTranslateX + (panDirection * PAN_STEP); // Gunakan panDirection
+                    
+                    const unscaledIframeWidth = examIframe.offsetWidth;
+                    const scaledIframeWidth = unscaledIframeWidth * currentZoom;
+                    const containerWidth = examContentWrapper.offsetWidth;
+
+                    // Batasi pan
+                    const maxNegativeX = -(Math.max(0, scaledIframeWidth - containerWidth));
+                    newTranslateX = Math.max(maxNegativeX, Math.min(0, newTranslateX));
+
+                    // Jika pan mencapai batas, hentikan
+                    if (newTranslateX === currentTranslateX) {
+                        stopAutoPan();
+                        return;
+                    }
+
+                    currentTranslateX = newTranslateX;
+                    applyIframeTransform();
+                } else {
+                    stopAutoPan(); // Hentikan pan otomatis jika tidak di-zoom
+                }
+            }, PAN_INTERVAL); // PERUBAHAN: Menggunakan PAN_INTERVAL yang baru
+        }
+
+        // Fungsi untuk menghentikan panning otomatis
+        function stopAutoPan() {
+            if (panIntervalId) {
+                clearInterval(panIntervalId);
+                panIntervalId = null;
+                console.log("Pan otomatis dihentikan.");
+            }
+        }
 
         // --- Pengaturan Awal pada DOM Content Loaded ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -3990,33 +4039,104 @@
                 updateZoomButtonStates();
             });
 
-            // Listener event tombol Pan Kiri/Kanan
-            panLeftBtn.addEventListener('click', () => {
-                resetAutoHideTimer(); // Reset timer pada interaksi
-                if (currentZoom > MIN_ZOOM) {
-                    let newTranslateX = currentTranslateX + PAN_STEP;
-                    // Hitung translasi positif maksimum (seberapa jauh ke kanan kita bisa pan)
-                    // Ini adalah 0 karena origin adalah kiri-atas, jadi X positif menggesernya ke kanan.
-                    const maxPositiveX = 0;
-                    newTranslateX = Math.min(maxPositiveX, newTranslateX); // Batasi ke 0
-                    currentTranslateX = newTranslateX;
-                    applyIframeTransform();
+            // --- Listener Event Panning Otomatis untuk Tekan-Tahan Tombol ---
+            // Pan Kiri
+            panLeftBtn.addEventListener('mousedown', (e) => {
+                if (e.button === 0) { // Hanya menanggapi klik kiri mouse
+                    resetAutoHideTimer();
+                    if (currentZoom > MIN_ZOOM) {
+                        if (panPressTimer) clearTimeout(panPressTimer); // Hapus timer sebelumnya jika ada
+                        panPressTimer = setTimeout(() => {
+                            panDirection = PAN_STEP; // Geser ke kanan (X positif)
+                            startAutoPan();
+                        }, PAN_START_DELAY);
+                    }
                 }
             });
-
-            panRightBtn.addEventListener('click', () => {
-                resetAutoHideTimer(); // Reset timer pada interaksi
-                if (currentZoom > MIN_ZOOM) {
-                    let newTranslateX = currentTranslateX - PAN_STEP;
-                    // Hitung translasi negatif maksimum (seberapa jauh ke kiri kita bisa pan)
+            // BARU: Tambahkan event listener untuk klik tunggal
+            panLeftBtn.addEventListener('click', () => {
+                if (currentZoom > MIN_ZOOM && panIntervalId === null) { // Hanya jika tidak dalam mode pan otomatis
+                    currentTranslateX += PAN_STEP;
                     const unscaledIframeWidth = examIframe.offsetWidth;
                     const scaledIframeWidth = unscaledIframeWidth * currentZoom;
                     const containerWidth = examContentWrapper.offsetWidth;
                     const maxNegativeX = -(Math.max(0, scaledIframeWidth - containerWidth));
-                    newTranslateX = Math.max(maxNegativeX, newTranslateX); // Batasi ke maxNegativeX
-                    currentTranslateX = newTranslateX;
+                    currentTranslateX = Math.max(maxNegativeX, Math.min(0, currentTranslateX));
                     applyIframeTransform();
+                    resetAutoHideTimer();
                 }
+            });
+            panLeftBtn.addEventListener('mouseup', () => {
+                stopAutoPan();
+                if (panPressTimer) clearTimeout(panPressTimer); // Hapus timer penundaan
+            });
+            panLeftBtn.addEventListener('mouseleave', () => {
+                stopAutoPan();
+                if (panPressTimer) clearTimeout(panPressTimer); // Hapus timer penundaan
+            });
+            panLeftBtn.addEventListener('touchstart', (e) => {
+                resetAutoHideTimer();
+                if (currentZoom > MIN_ZOOM && e.touches.length === 1) {
+                    if (panPressTimer) clearTimeout(panPressTimer);
+                    panPressTimer = setTimeout(() => {
+                        panDirection = PAN_STEP;
+                        startAutoPan();
+                    }, PAN_START_DELAY);
+                }
+            }, { passive: true }); // Gunakan passive: true karena tidak memanggil preventDefault
+            panLeftBtn.addEventListener('touchend', () => {
+                stopAutoPan();
+                if (panPressTimer) clearTimeout(panPressTimer);
+            });
+
+
+            // Pan Kanan
+            panRightBtn.addEventListener('mousedown', (e) => {
+                if (e.button === 0) { // Hanya menanggapi klik kiri mouse
+                    resetAutoHideTimer();
+                    if (currentZoom > MIN_ZOOM) {
+                        if (panPressTimer) clearTimeout(panPressTimer); // Hapus timer sebelumnya jika ada
+                        panPressTimer = setTimeout(() => {
+                            panDirection = -PAN_STEP; // Geser ke kiri (X negatif)
+                            startAutoPan();
+                        }, PAN_START_DELAY);
+                    }
+                }
+            });
+            // BARU: Tambahkan event listener untuk klik tunggal
+            panRightBtn.addEventListener('click', () => {
+                if (currentZoom > MIN_ZOOM && panIntervalId === null) { // Hanya jika tidak dalam mode pan otomatis
+                    currentTranslateX -= PAN_STEP;
+                    const unscaledIframeWidth = examIframe.offsetWidth;
+                    const scaledIframeWidth = unscaledIframeWidth * currentZoom;
+                    const containerWidth = examContentWrapper.offsetWidth;
+                    const maxNegativeX = -(Math.max(0, scaledIframeWidth - containerWidth));
+                    currentTranslateX = Math.max(maxNegativeX, Math.min(0, currentTranslateX));
+                    applyIframeTransform();
+                    resetAutoHideTimer();
+                }
+            });
+            panRightBtn.addEventListener('mouseup', () => {
+                stopAutoPan();
+                if (panPressTimer) clearTimeout(panPressTimer); // Hapus timer penundaan
+            });
+            panRightBtn.addEventListener('mouseleave', () => {
+                stopAutoPan();
+                if (panPressTimer) clearTimeout(panPressTimer); // Hapus timer penundaan
+            });
+            panRightBtn.addEventListener('touchstart', (e) => {
+                resetAutoHideTimer();
+                if (currentZoom > MIN_ZOOM && e.touches.length === 1) {
+                    if (panPressTimer) clearTimeout(panPressTimer);
+                    panPressTimer = setTimeout(() => {
+                        panDirection = -PAN_STEP;
+                        startAutoPan();
+                    }, PAN_START_DELAY);
+                }
+            }, { passive: true }); // Gunakan passive: true karena tidak memanggil preventDefault
+            panRightBtn.addEventListener('touchend', () => {
+                stopAutoPan();
+                if (panPressTimer) clearTimeout(panPressTimer);
             });
 
             // Listener event tombol refresh iframe
