@@ -541,6 +541,18 @@
             pointer-events: none; /* Penting: Nonaktifkan interaksi dengan konten iframe saat menyeret */
         }
 
+        /* NEW: Transparent overlay to block top part of iframe */
+        #topIframeBlocker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px; /* Adjust this height based on where the "Open in new window" button is */
+            background: transparent; /* Fully transparent */
+            z-index: 550; /* Higher than iframe (500), lower than sidebar/controls (600+) */
+            pointer-events: auto; /* IMPORTANT: This makes the overlay capture clicks, preventing them from reaching the iframe below */
+        }
+
         /* --- Sidebar Jawaban --- */
         #answerSidebar {
             position: absolute;
@@ -1526,12 +1538,14 @@
         </div>
         <div id="examContentWrapper">
             <iframe id="examIframe" src="" frameborder="0"></iframe>
+            <!-- NEW: Transparent overlay to block top part of iframe -->
+            <div id="topIframeBlocker"></div>
 
             <div id="zoomControls">
                 <div id="mainToggleBtnContainer">
-                    <button id="toggleControlsBtn" title="Toggle Controls">
+                    <button id="toggleControlsBtn" title="Alihkan Kontrol">
                         <span class="icon">&#9776;</span> </button>
-                    <button id="refreshIframeBtn" title="Refresh Iframe">
+                    <button id="refreshIframeBtn" title="Muat Ulang Iframe">
                         <span class="icon">&#x21BB;</span>
                     </button>
                 </div>
@@ -2522,7 +2536,7 @@
                 }
                 backToLoginFromSubmissionBtn.innerText = 'KEMBALI'; // Pastikan teks tombol konsisten
 
-                // Set isLoggedIn ke false dan tambahkan logoutTimestamp di Firebase
+                // Set isLoggedIn ke false dan atur attemptsLeft di Firebase
                 const tokenFirebaseKey = foundTokenGlobal?.key;
                 const studentId = selectedStudentData?.id ? padStudentId(selectedStudentData.id) : null;
                 const studentFirebaseKey = selectedStudentData?.key;
@@ -2532,8 +2546,7 @@
                     const accessStatusRef = child(dbRefs.examAccessStatusRef, `${tokenFirebaseKey}/${studentId}`);
                     const studentIsLoggedInRef = child(dbRefs.studentsRef, `${studentFirebaseKey}/isLoggedIn`);
                     try {
-                        // Perbarui isLoggedIn dan logoutTimestamp
-                        // Catatan: logoutTimestamp tidak lagi digunakan untuk reset 1 menit, tetapi disimpan untuk tujuan pelacakan jika diperlukan di masa mendatang.
+                        // Perbarui isLoggedIn
                         await update(accessStatusRef, { isLoggedIn: false, studentId: studentId });
                         console.log("isLoggedIn diatur ke false di exam_access_status saat pengiriman.");
 
@@ -3056,6 +3069,35 @@
 
                     // Atur variabel global sebelum memulai proses ujian atau menampilkan overlay
                     globalExamUrl = foundTokenGlobal.googleDriveUrl;
+
+                    // Pastikan URL menggunakan /preview dan tambahkan &chrome=false
+                    if (globalExamUrl.includes('drive.google.com/file/d/')) {
+                        // Ganti /view dengan /preview jika ada
+                        globalExamUrl = globalExamUrl.replace('/view', '/preview');
+                        
+                        // Pastikan /preview ada. Jika tidak, tambahkan setelah file ID
+                        if (!globalExamUrl.includes('/preview')) {
+                            const parts = globalExamUrl.split('/file/d/');
+                            if (parts.length > 1) {
+                                const fileIdAndRest = parts[1].split('/');
+                                const fileId = fileIdAndRest[0];
+                                globalExamUrl = `${parts[0]}/file/d/${fileId}/preview`;
+                                // Tangani sisa URL jika ada (misalnya, /edit, /export)
+                                if (fileIdAndRest.length > 1) {
+                                    globalExamUrl += fileIdAndRest.slice(1).join('/');
+                                }
+                            }
+                        }
+
+                        // Tambahkan &chrome=false. Periksa apakah sudah ada parameter query
+                        const hasQueryParams = globalExamUrl.includes('?');
+                        if (!globalExamUrl.includes('chrome=false')) {
+                            globalExamUrl += hasQueryParams ? '&chrome=false' : '?chrome=false';
+                        }
+                    }
+                    console.log("Final Google Drive URL:", globalExamUrl);
+
+
                     globalExamDurationMinutes = examDurationMinutes;
                     globalNumQuestions = numQuestions;
                     globalExamStartTime = Number(examAccessDataAfterTransaction.snapshot.val().examStartTime);
@@ -3335,7 +3377,6 @@
                 const accessStatusRef = child(dbRefs.examAccessStatusRef, `${tokenFirebaseKey}/${studentId}`);
                 await update(accessStatusRef, {
                     isLoggedIn: false,
-                    // logoutTimestamp tidak lagi digunakan untuk reset 1 menit
                     studentId: studentId, // PENTING: Pastikan studentId tetap ada untuk aturan
                     attemptsLeft: toleranceLimitGlobal // Reset attemptsLeft saat pengiriman berhasil
                 });
